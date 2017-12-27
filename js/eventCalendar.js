@@ -1,5 +1,6 @@
 /**
- * @author Mücahid Dayan 
+ * @author Mücahid Dayan
+ * @description AngularJS Event Calendar Module with Scheduler
  * 
  */
 
