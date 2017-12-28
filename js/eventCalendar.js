@@ -87,12 +87,20 @@ eventCalendar.directive('calendar', ['calendarService', (calendarService) => {
                 scope.calendar.displayedDate.subtract(1, 'day');
                 scope.calendar.updateCalendar();
             },
-            nextMonth: () => {
+            goToNextMonth: () => {
                 scope.calendar.displayedDate.add(1, 'month');
                 scope.calendar.updateCalendar();
             },
-            prevMonth: () => {
+            goToPrevMonth: () => {
                 scope.calendar.displayedDate.subtract(1, 'month');
+                scope.calendar.updateCalendar();
+            },
+            goToNextWeek:() => {
+                scope.calendar.displayedDate.add(1, 'week');
+                scope.calendar.updateCalendar();
+            },
+            goToPrevWeek: () => {
+                scope.calendar.displayedDate.subtract(1, 'week');
                 scope.calendar.updateCalendar();
             },
             updateCalendar: () => {
@@ -108,6 +116,9 @@ eventCalendar.directive('calendar', ['calendarService', (calendarService) => {
                     scope.calendar.currentFormattedMonth = scope.calendar.displayedDate.format('MMMM');
                     scope.calendar.currentMonth = scope.calendar.displayedDate.format('MM');
                     scope.calendar.currentYear = scope.calendar.displayedDate.format('YYYY');
+                    scope.calendar.currentWeek = scope.calendar.displayedDate.weeks();
+                    scope.calendar.nextWeek = moment(scope.calendar.displayedDate).add(1,'week').weeks();
+                    scope.calendar.prevWeek = moment(scope.calendar.displayedDate).subtract(1,'week').weeks();
                 } catch (e) {
                     console.warn(e);
                 }
@@ -125,7 +136,12 @@ eventCalendar.directive('calendar', ['calendarService', (calendarService) => {
             displayedDate: null,
             currentFormattedMonth: null,
             currentMonth: null,
+            currentWeek:null,
             currentYear: null,
+            prevWeek:null,
+            nextWeek:null,
+            prevMonth:null,
+            nextMonth:null,
         };        
         scope.calendar.init();
         console.log(scope.daysToView);
@@ -145,12 +161,16 @@ eventCalendar.directive('calendar', ['calendarService', (calendarService) => {
             <div class="event-calendar-wrapper">
                 <div class="event-calendar-view-wrapper">
                     <div class="controllers">
-                        <i class="button prev" ng-click="calendar.prevMonth()">Prev</i>
+                        <i class="button prev prev-month" ng-click="calendar.goToPrevMonth()" ng-bind="calendar.prevMonth"></i>
+                        <i class="button prev prev-week" ng-click="calendar.goToPrevWeek()" ng-bind="calendar.prevWeek"></i>
+                        <i ng-bind="calendar.currentWeek"></i>
+                        <i class="button next next-week" ng-click="calendar.goToNextWeek()" ng-bind="calendar.nextWeek"></i>
+                        <i class="button next next-month" ng-click="calendar.goToNextMonth()" ng-bind="calendar.nextMonth"></i>
                         <div class="calendar-infos">
                             <h5 ng-bind="calendar.currentFormattedMonth" ng-attr-title="{{calendar.currentMonth}}"></h5>
                             <h3 ng-bind="calendar.currentYear"></h3>
                         </div>
-                        <i class="button next" ng-click="calendar.nextMonth()">Next</i>
+                        
                         <i class="button today" ng-click="calendar.goToToday()">Today</i>
                     </div>         
                     <div class="event-calendar-view">
@@ -244,7 +264,7 @@ eventCalendar.directive('weekView', ['calendarService', (calendarService) => {
 
     let template = () => {
         return `
-        
+
             <div class="day" ng-repeat="day in src track by $index">
             <span ng-bind="day.format('D')" ng-attr-title="{{day.format('LL')}}"></span>
             </div>
