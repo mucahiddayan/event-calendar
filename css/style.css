@@ -9,7 +9,7 @@ calendar.ng-isolate-scope {
     height: auto;
 }
 
-days-in-month {
+month-view {
     display: flex;
     flex-wrap: wrap;
 }
