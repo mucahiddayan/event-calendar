@@ -86,3 +86,20 @@ week-view {display: flex;}
     display: flex;
     width: 100%;
 }
+
+.new-year {
+    background-color:rgba(255,1,2,.5);
+}
+
+.hours-wrapper {
+    max-height: 500px;
+    overflow: auto;
+}
+
+.hours-wrapper::-webkit-scrollbar-thumb{
+   background-color:red;
+}
+
+.hours-wrapper::-webkit-scrollbar{
+    width:1px;
+}
