@@ -15,7 +15,7 @@ const eventCalendarDependencies = [];
 const eventCalendar = angular.module('eventCalendar', eventCalendarDependencies);
 
 eventCalendar.controller('eventCalendarMainController', ['$scope', ($scope) => {
-
+    $scope.view = 'month';
 }]);
 
 eventCalendar.directive('eventCalendarScheduler', [() => {
@@ -103,6 +103,14 @@ eventCalendar.directive('calendar', ['calendarService', (calendarService) => {
                 scope.calendar.displayedDate.subtract(1, 'week');
                 scope.calendar.updateCalendar();
             },
+            setWeek : () => {
+                scope.calendar.displayedDate.week(scope.calendar.currentWeek);
+                scope.calendar.updateCalendar();
+            },
+            setYear : () => {
+                scope.calendar.displayedDate.year(scope.calendar.currentYear);
+                scope.calendar.updateCalendar();
+            },
             updateCalendar: () => {
                 try {
                     let view = scope.view || 'month';
@@ -133,7 +141,7 @@ eventCalendar.directive('calendar', ['calendarService', (calendarService) => {
                 scope.calendar.displayedDate = moment();
                 scope.calendar.updateCalendar();
             },
-
+            weekDays :calendarService.getWeekDays(),
             today: null,
             displayedDate: null,
             currentFormattedMonth: null,
@@ -146,7 +154,6 @@ eventCalendar.directive('calendar', ['calendarService', (calendarService) => {
             nextMonth: null,
         };
         scope.calendar.init();
-        console.log(scope.daysToView);
     }
 
     let template = (element, attributes) => {
@@ -157,28 +164,32 @@ eventCalendar.directive('calendar', ['calendarService', (calendarService) => {
                 calendarView = '<month-view src="daysToView"></month-view>'; break;
             case 'week':
                 calendarView = '<week-view src="daysToView"></week-view>'; break;
+            default:
+                calendarView = '<month-view src="daysToView"></month-view>'; break;
         }
 
         return `
             <div class="event-calendar-wrapper">
-                <div class="event-calendar-view-wrapper">
+                <div class="event-calendar">                    
                     <div class="controllers">
-                        
-                        <i class="button prev prev-week" ng-click="calendar.goToPrevWeek()" ng-bind="calendar.prevWeek"></i>
-                        <i ng-bind="calendar.currentWeek"></i>
-                        <i class="button next next-week" ng-click="calendar.goToNextWeek()" ng-bind="calendar.nextWeek"></i>
-                       
-                        <div class="calendar-infos">
                         <i class="button prev prev-month" ng-click="calendar.goToPrevMonth()" ng-bind="calendar.prevMonth"></i>
-                        <h5 ng-bind="calendar.currentFormattedMonth"></h5>
-                            <h3 ng-bind="calendar.currentYear"></h3>
-                            <i class="button next next-month" ng-click="calendar.goToNextMonth()" ng-bind="calendar.nextMonth"></i>
-                        </div>
-                        
+                        <i class="button prev prev-week" ng-click="calendar.goToPrevWeek()" ng-bind="calendar.prevWeek"></i>
+                        <input class="button" ng-model="calendar.currentWeek" ng-enter="calendar.setWeek()" />
+                        <i class="button next next-week" ng-click="calendar.goToNextWeek()" ng-bind="calendar.nextWeek"></i>
+                        <i class="button next next-month" ng-click="calendar.goToNextMonth()" ng-bind="calendar.nextMonth"></i>
+                        <i class="button" ng-bind="calendar.currentFormattedMonth"></i>
+                        <input class="button" ng-model="calendar.currentYear" ng-enter="calendar.setYear()" />
                         <i class="button today" ng-click="calendar.goToToday()">Today</i>
-                    </div>         
-                    <div class="event-calendar-view">
-                        ${calendarView}
+                    </div>
+                    <div class="event-calendar-view-wrapper">                        
+                        <div class="event-calendar-view">
+                            <div class="weekdays">
+                                <div class="day week-day" ng-repeat="weekday in calendar.weekDays track by $index">
+                                    <span ng-bind="weekday"></span>
+                                </div>
+                            </div>
+                            ${calendarView}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -229,7 +240,7 @@ eventCalendar.directive('monthView', ['calendarService', (calendarService) => {
         return `
         <div class="days-in-week" ng-repeat="weekday in src track by $index">
             <div class="day" ng-click="goToNextPrevMonth(day)" ng-repeat="day in weekday track by $index" ng-class="{'today': isToday(day),'not-in-month': !isInThisMonth(day)}">
-            <span ng-bind="day.format('D')" ng-attr-title="{{day.format('LL')}}"></span>
+            <span ng-bind="day.format('D')" ng-attr-title="{{day.format('dddd,  LL')}}"></span>
             </div>
         </div>
         `;
@@ -246,6 +257,15 @@ eventCalendar.directive('monthView', ['calendarService', (calendarService) => {
 
 eventCalendar.directive('weekView', ['calendarService', (calendarService) => {
     let link = (scope, element) => {
+
+        scope.isToday = date => {
+            try {
+                return calendarService.isToday(date);
+            } catch (e) {
+                console.warn(e);
+            }
+        }
+
         scope.isInThisWeek = date => {
             try {
                 return !calendarService.isNextWeek(date) && !calendarService.isPrevWeek(date);
@@ -264,14 +284,34 @@ eventCalendar.directive('weekView', ['calendarService', (calendarService) => {
                 calendarService.goToPrevWeek(scope, date);
             }
         }
+       
+        console.log(scope.weekDays);
+
+        let getHours = (start = 6, end = 22 , range = 30 ) => {
+            let hours = [];
+            for (let i = start; i <= end; i+=(range/60)){
+                hours.push(i);
+            }
+            return hours;
+        }
+
+
+        scope.hours = getHours()
     }
 
     let template = () => {
         return `
-
-            <div class="day" ng-repeat="day in src track by $index">
-            <span ng-bind="day.format('D')" ng-attr-title="{{day.format('LL')}}"></span>
+        <div class="week-view-wrapper">
+           <div class="day" ng-repeat="day in src track by $index">
+                <div ng-bind="day.format('D')" ng-attr-title="{{day.format('dddd,  LL')}}" ng-class="{'today': isToday(day)}" class="day-header">
+                </div>
+                <div class="hours-wrapper">
+                    <div class="hour" ng-repeat="hour in hours track by $index" ng-attr-title="{{hour}}">
+                        <div ></div>
+                    </div>
+                </div>
             </div>
+        </div>
         
         `;
     }
@@ -284,6 +324,20 @@ eventCalendar.directive('weekView', ['calendarService', (calendarService) => {
         }
     };
 }]);
+
+eventCalendar.directive('ngEnter', function() {
+    return function(scope, element, attrs) {
+        element.bind("keydown keypress", function(event) {
+            if(event.which === 13) {
+                    scope.$apply(function(){
+                            scope.$eval(attrs.ngEnter);
+                    });
+                    
+                    event.preventDefault();
+            }
+        });
+    };
+});
 
 eventCalendar.factory('calendarService', [() => {
     let today = moment();
@@ -310,6 +364,15 @@ eventCalendar.factory('calendarService', [() => {
         scopeCheck(scope);
         scope.$emit('displayedDateChanged', { date });
         d__ = date;
+    }
+
+    let getWeekDays = (format='dddd') => {
+        let days = [];
+        let start = moment().startOf('week');
+        for(let i=0;i<7;i++){
+            days.push(moment(start).add(i,'day').format(format));
+        }
+        return days;
     }
 
     let getToday = () => today;
@@ -349,6 +412,16 @@ eventCalendar.factory('calendarService', [() => {
         }
         return days;
     };
+
+    let daysInWeek = date => {
+        check(date);
+        let start = moment(date).startOf('week');
+        let days = [];        
+        for (let i = 0; i < 7; i++) {
+            days.push(moment(start).add(i,'day'));
+        }
+        return days;
+    }
 
     let goToPast = (scope, date) => {
         scopeCheck(scope);
@@ -395,7 +468,7 @@ eventCalendar.factory('calendarService', [() => {
 
     let getDaysInWeek = date => {
         check(date);
-        return daysInMonth(date).filter(day => day.week() === date.week());
+        return daysInWeek(date);
     }
 
     return {
@@ -414,6 +487,7 @@ eventCalendar.factory('calendarService', [() => {
         isNextWeek,
         isPrevWeek,
         goToPrevWeek,
-        goToNextWeek
+        goToNextWeek,
+        getWeekDays
     };
 }]);

@@ -6,12 +6,16 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Event Calendar</title>
     <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css" />
     <script src="bower_components/moment/moment.js"></script>
     <script src="bower_components/angular/angular.min.js"></script>
     <script src="js/eventCalendar.js"></script>
     <script src="i18n/de.js"></script>
 </head>
 <body ng-app="eventCalendar" ng-controller="eventCalendarMainController">
-    <calendar view="week"></calendar>
+    <input type="radio" value="week" ng-model="view" id="week" /><label for="week">week</label>
+    <input type="radio" value="month" ng-model="view"  id="month" /><label for="month">month</label>
+    <calendar view="week" ng-if="view === 'week'"></calendar>
+    <calendar view="month" ng-if="view === 'month'"></calendar>
 </body>
 </html>
