@@ -315,7 +315,7 @@ eventCalendar.directive('weekView', ['calendarService', (calendarService) => {
                 <div ng-bind="day.format('D')+(!isInSameYear(day)?' new year':'')" ng-attr-title="{{day.format('dddd,  LL')}}" ng-class="{'today': isToday(day)}" class="day-header">
                 </div>
                 <div class="hours-wrapper">
-                    <div class="hour" ng-repeat="hour in hours track by $index" ng-attr-title="{{hour}}">
+                    <div ng-attr-data-date="{{day.format('LL')}}" class="hour" ng-repeat="hour in hours track by $index" ng-attr-title="{{hour}}">
                         <div ></div>
                     </div>
                 </div>
